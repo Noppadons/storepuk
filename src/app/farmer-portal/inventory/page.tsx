@@ -4,21 +4,15 @@
 import { useAuth } from '@/context/AuthContext';
 import { formatPrice, formatThaiDate } from '@/lib/utils';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { HarvestBatch, Product } from '@/types';
+import { useEffect, useState, useCallback } from 'react';
+import { HarvestBatch } from '@/types';
 
 export default function InventoryPage() {
     const { user } = useAuth();
     const [batches, setBatches] = useState<HarvestBatch[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (user) {
-            fetchBatches();
-        }
-    }, [user]);
-
-    const fetchBatches = async () => {
+    const fetchBatches = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch(`/api/batches?userId=${user?.id}`);
@@ -31,7 +25,13 @@ export default function InventoryPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user?.id]);
+
+    useEffect(() => {
+        if (user) {
+            fetchBatches();
+        }
+    }, [user, fetchBatches]);
 
     if (!user) {
         return <div className="p-8 text-center text-gray-500">กรุณาเข้าสู่ระบบเพื่อจัดการสต็อก</div>;

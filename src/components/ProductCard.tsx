@@ -1,7 +1,7 @@
 'use client';
 
 import { Product, HarvestBatch } from '@/types';
-import { calculateFreshness, formatThaiDate, formatPrice, cn } from '@/lib/utils';
+import { calculateFreshness, formatPrice, cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion } from 'framer-motion';

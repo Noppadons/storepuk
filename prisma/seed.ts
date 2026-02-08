@@ -94,7 +94,7 @@ async function main() {
 
     // 4. Batches
     for (const batch of harvestBatches) {
-        const farmId = batch.farmer?.farm?.id || batch.farmer?.id || (batch as any).farmId;
+        const farmId = batch.farmer?.farm?.id || batch.farmer?.id || (batch as unknown as { farmId?: string }).farmId;
         if (!farmId) {
             console.warn(`Skipping batch ${batch.id}: missing farm/farmer reference`);
             continue;

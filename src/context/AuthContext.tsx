@@ -2,7 +2,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Address } from '@/types'; // Reuse existing types, might need adjustment if Prisma types differ slightly
+import { User } from '@/types'; // Reuse existing types, might need adjustment if Prisma types differ slightly
 // Actually, Prisma generated types are better, but let's stick to shared interface if possible or map them.
 // Our User interface in types/index.ts matches fairly well.
 
@@ -35,8 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     const userData = await res.json();
                     setUser(userData);
                 }
-            } catch (e) {
-                console.error('Failed to check session');
+            } catch (err) {
+                console.error('Failed to check session', err);
             } finally {
                 setLoading(false);
             }

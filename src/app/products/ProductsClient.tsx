@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Header, Footer, ProductCard, CategoryCard } from '@/components';
+import { Header, Footer, ProductCard } from '@/components';
 import { useState } from 'react';
 import { Product, Category } from '@/types'; // or Prisma types
 import Link from 'next/link';

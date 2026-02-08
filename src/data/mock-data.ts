@@ -1,4 +1,4 @@
-import { Category, Product, HarvestBatch, Farm, Farmer, FreshnessLevel, FreshnessInfo, User, Order, OrderItem, Address, OrderStatus } from '@/types';
+import { Category, Product, HarvestBatch, Farm, Farmer, User, Order } from '@/types';
 
 // Categories
 export const categories: Category[] = [
@@ -318,8 +318,6 @@ export const products: Product[] = [
 export const calculateFreshness = (harvestDate: Date | string) => {
     const date = new Date(harvestDate);
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const daysFromHarvest = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
     if (daysFromHarvest <= 1) {

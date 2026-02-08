@@ -7,7 +7,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, Phone, Lock, ShieldCheck, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function RegisterPage() {

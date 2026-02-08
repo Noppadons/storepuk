@@ -4,7 +4,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { formatPrice, formatThaiDate } from '@/lib/utils';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { HarvestBatch, Order } from '@/types';
 
 export default function FarmerDashboard() {
@@ -13,13 +13,7 @@ export default function FarmerDashboard() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (user) {
-            fetchData();
-        }
-    }, [user]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             // Fetch Batches
@@ -40,7 +34,13 @@ export default function FarmerDashboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user?.id]);
+
+    useEffect(() => {
+        if (user) {
+            fetchData();
+        }
+    }, [user, fetchData]);
 
     if (!user) {
         return <div className="p-8 text-center">กรุณาเข้าสู่ระบบ</div>;

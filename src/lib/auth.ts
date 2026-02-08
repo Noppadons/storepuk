@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 const JWT_SECRET = new TextEncoder().encode(
     process.env.JWT_SECRET || 'sodsai-super-secret-key-change-me-in-production'
@@ -28,7 +28,7 @@ export async function verifyToken(token: string): Promise<Record<string, unknown
     try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
         return payload as Record<string, unknown>;
-    } catch (err) {
+    } catch {
         return null;
     }
 }

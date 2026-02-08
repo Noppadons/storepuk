@@ -4,10 +4,11 @@
 import { Header, Footer } from '@/components';
 import { formatPrice, formatThaiDate } from '@/lib/utils'; // corrected import
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { Order, Address } from '@/types';
+import { Order } from '@/types';
 
 type Tab = 'overview' | 'orders' | 'addresses' | 'favorites' | 'settings';
 
@@ -19,7 +20,6 @@ export default function AccountPage() {
     const [loadingOrders, setLoadingOrders] = useState(false);
 
     // Profile form state
-    const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -74,7 +74,7 @@ export default function AccountPage() {
                 throw new Error('Failed to update profile');
             }
 
-            setIsEditing(false);
+            
             alert('บันทึกข้อมูลสำเร็จ');
         } catch (error) {
             console.error('Update failed:', error);
@@ -128,8 +128,8 @@ export default function AccountPage() {
                         {/* User Card */}
                         <div className="card p-6 mb-4">
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-2xl">
-                                    {(user.image) ? <img src={user.image} alt="User" className="rounded-full" /> : '👤'}
+                                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-2xl overflow-hidden">
+                                    {(user.image) ? <Image src={user.image} alt="User" width={64} height={64} className="rounded-full object-cover" /> : '👤'}
                                 </div>
                                 <div>
                                     <h2 className="font-semibold">{user.name || user.fullName}</h2>

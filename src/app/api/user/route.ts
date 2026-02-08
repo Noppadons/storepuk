@@ -35,7 +35,8 @@ export async function GET(request: Request) {
                 return NextResponse.json({ error: 'User not found' }, { status: 404 });
             }
 
-            const { password: _, ...userWithoutPassword } = user;
+            const userWithoutPassword = { ...user } as Record<string, unknown>;
+            delete (userWithoutPassword as { password?: unknown }).password;
             return NextResponse.json(userWithoutPassword);
         }
 

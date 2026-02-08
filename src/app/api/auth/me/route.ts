@@ -24,7 +24,8 @@ export async function GET() {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        const { password: _, ...userWithoutPassword } = user;
+        const userWithoutPassword = { ...user } as Record<string, unknown>;
+        delete (userWithoutPassword as { password?: unknown }).password;
         return NextResponse.json(userWithoutPassword);
     } catch (error) {
         console.error('Auth check error:', error);

@@ -34,7 +34,8 @@ export async function POST(request: Request) {
         });
 
         // Return user without password
-        const { password: _, ...userWithoutPassword } = user;
+        const userWithoutPassword = { ...user } as Record<string, unknown>;
+        delete (userWithoutPassword as { password?: unknown }).password;
 
         return NextResponse.json(userWithoutPassword);
     } catch (error: unknown) {

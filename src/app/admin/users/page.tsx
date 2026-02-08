@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { User } from '@/types';
-import { formatThaiDate } from '@/lib/utils';
 
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<User[]>([]);

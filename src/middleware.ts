@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
 
             // Allow access
             return NextResponse.next();
-        } catch (err) {
+        } catch {
             // Invalid token
             const response = NextResponse.redirect(new URL('/login', request.url));
             response.cookies.delete('sodsai_token');

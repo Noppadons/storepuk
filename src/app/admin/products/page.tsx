@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Product, Category } from '@/types';
 import { formatPrice } from '@/lib/utils';
 
@@ -22,11 +22,7 @@ export default function AdminProductsPage() {
         storageTemp: '2-8°C'
     });
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         setLoading(true);
         try {
             const [prodRes, catRes] = await Promise.all([
@@ -49,7 +45,11 @@ export default function AdminProductsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [formData.categoryId]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     const handleOpenModal = (product: Product | null = null) => {
         if (product) {

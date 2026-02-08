@@ -7,7 +7,6 @@ import {
     Phone,
     Mail,
     Clock,
-    MapPin,
     ShieldCheck,
     ArrowUpRight,
     Leaf

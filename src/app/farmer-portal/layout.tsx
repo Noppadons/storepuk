@@ -3,6 +3,45 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+
+function UserSummary() {
+    const { user, loading, logout } = useAuth();
+
+    let displayName = 'ผู้ใช้';
+    let farmName = '';
+
+    if (user && typeof user === 'object') {
+        const u = user as Record<string, unknown>;
+        if ('name' in u && u.name) displayName = String(u.name);
+        else if ('displayName' in u && u.displayName) displayName = String(u.displayName);
+
+        const maybeFarm = u.farm;
+        if (maybeFarm && typeof maybeFarm === 'object' && 'name' in (maybeFarm as Record<string, unknown>)) {
+            farmName = String((maybeFarm as Record<string, unknown>).name ?? '');
+        } else if ('farmName' in u && u.farmName) {
+            farmName = String(u.farmName);
+        }
+    }
+
+    return (
+        <div>
+            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">👨‍🌾</div>
+                <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{loading ? 'กำลังโหลด…' : displayName}</p>
+                    {farmName ? <p className="text-xs text-gray-500">{farmName}</p> : null}
+                </div>
+            </div>
+            <button
+                onClick={() => logout()}
+                className="flex items-center gap-2 px-4 py-2 mt-2 w-full text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors justify-center"
+            >
+                🚪 ออกจากระบบ
+            </button>
+        </div>
+    );
+}
 
 export default function FarmerLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -42,21 +81,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
                 </nav>
 
                 <div className="p-4 border-t border-gray-200">
-                    <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-lg">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
-                            👨‍🌾
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate">ลุงสมชาย</p>
-                            <p className="text-xs text-gray-500">ฟาร์มสุขใจ</p>
-                        </div>
-                    </div>
-                    <Link
-                        href="/login"
-                        className="flex items-center gap-2 px-4 py-2 mt-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors justify-center"
-                    >
-                        🚪 ออกจากระบบ
-                    </Link>
+                    <UserSummary />
                 </div>
             </aside>
 
@@ -103,15 +128,7 @@ export default function FarmerLayout({ children }: { children: React.ReactNode }
                                 ))}
                             </nav>
                             <div className="p-4 border-t border-gray-200 bg-gray-50">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xl">
-                                        👨‍🌾
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-sm">ลุงสมชาย</p>
-                                        <p className="text-xs text-gray-500">ฟาร์มสุขใจ</p>
-                                    </div>
-                                </div>
+                                <UserSummary />
                             </div>
                         </aside>
                     </div>

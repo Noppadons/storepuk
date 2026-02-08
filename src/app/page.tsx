@@ -1,65 +1,137 @@
-import Image from "next/image";
 
-export default function Home() {
+import { Header, Footer, ProductCard, CategoryCard, HeroCarousel } from '@/components';
+import Link from 'next/link';
+import prisma from '@/lib/prisma';
+
+// Helper to transform DB product to Component Product type
+// The ProductCard expects generic Product interface.
+// Our DB scan returns Prisma types. We might need to map them if they differ.
+// But we tailored our Seed & Schema closely.
+
+async function getProducts() {
+  // Newest products
+  const newArrivals = await prisma.product.findMany({
+    take: 6,
+    orderBy: { id: 'desc' }, // or createdAt if added
+    include: {
+      category: true,
+      batches: {
+        where: { status: 'available', remainingKg: { gt: 0 } },
+        orderBy: { harvestDate: 'desc' },
+        take: 1
+      }
+    }
+  });
+
+  return newArrivals;
+}
+
+async function getCategories() {
+  return await prisma.category.findMany({
+    orderBy: { sortOrder: 'asc' }
+  });
+}
+
+// Force dynamic because we are fetching data
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  const newArrivals = await getProducts();
+  const categories = await getCategories();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="container-app py-6">
+          <HeroCarousel />
+        </section>
+
+        {/* Categories Section */}
+        <section className="container-app py-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">หมวดหมู่ยอดนิยม</h2>
+            <Link href="/categories" className="text-primary text-sm font-medium hover:underline">
+              ดูทั้งหมด
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {categories.map((category) => (
+              <CategoryCard key={category.id} category={category as any} />
+            ))}
+          </div>
+        </section>
+
+        {/* Fresh Today Section */}
+        <section className="container-app py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🌟</span>
+              <h2 className="text-xl font-bold">สดใหม่วันนี้</h2>
+            </div>
+            <Link href="/products?filter=fresh" className="text-primary text-sm font-medium hover:underline flex items-center gap-1">
+              ดูทั้งหมด
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {newArrivals.map((product) => (
+              <ProductCard key={product.id} product={product as any} />
+            ))}
+          </div>
+        </section>
+
+        {/* Why Choose Us Section */}
+        <section className="bg-surface py-12 mt-8">
+          <div className="container-app">
+            <h2 className="text-2xl font-bold text-center mb-10">ทำไมต้องเลือก สดใส?</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Feature 1 */}
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-green-100 flex items-center justify-center">
+                  <span className="text-3xl">📅</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">วันที่เก็บเกี่ยวชัดเจน</h3>
+                <p className="text-foreground-muted">
+                  ทุกสินค้าแสดงวันที่เก็บเกี่ยว คุณรู้แน่ชัดว่าผักสดแค่ไหน
+                </p>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-lime-100 flex items-center justify-center">
+                  <span className="text-3xl">🚚</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">ส่งตรงจากฟาร์ม</h3>
+                <p className="text-foreground-muted">
+                  ไม่ผ่านคนกลาง เก็บเช้าส่งบ่าย ถึงมือคุณสดที่สุด
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-100 flex items-center justify-center">
+                  <span className="text-3xl">✓</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">รับรองมาตรฐาน GAP</h3>
+                <p className="text-foreground-muted">
+                  ฟาร์มทุกแห่งผ่านการรับรอง ปลอดภัย ไร้สารตกค้าง
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Popular Products (Reusing New Arrivals for MVP or fetch distinct logic) */}
+        {/* Skipping Popular section duplication for brevity, or reuse */}
+
       </main>
+
+      <Footer />
     </div>
   );
 }

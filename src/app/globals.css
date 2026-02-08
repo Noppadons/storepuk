@@ -1,26 +1,314 @@
 @import "tailwindcss";
 
+/* SodSai Design System - Thai Vegetable E-Commerce */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary Colors */
+  --primary: #22C55E;
+  --primary-dark: #16A34A;
+  --primary-light: #4ADE80;
+  
+  /* Secondary Colors */
+  --secondary: #78716C;
+  --secondary-dark: #57534E;
+  --secondary-light: #A8A29E;
+  
+  /* Accent */
+  --accent: #EAB308;
+  --accent-dark: #CA8A04;
+  --accent-light: #FDE047;
+  
+  /* Backgrounds */
+  --background: #FEFCE8;
+  --surface: #FFFFFF;
+  --surface-hover: #F5F5F4;
+  
+  /* Text */
+  --foreground: #1C1917;
+  --foreground-muted: #78716C;
+  
+  /* Status Colors */
+  --success: #16A34A;
+  --warning: #EA580C;
+  --error: #DC2626;
+  --info: #0EA5E9;
+  
+  /* Freshness Colors */
+  --fresh-very: #22C55E;
+  --fresh-good: #84CC16;
+  --fresh-normal: #EAB308;
+  --fresh-expiring: #EA580C;
 }
 
 @theme inline {
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --font-sans: var(--font-prompt);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Prompt', sans-serif;
+  line-height: 1.6;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Utility Classes */
+.container-app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Card Styles */
+.card {
+  background: var(--surface);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Button Base Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--secondary-light);
+}
+
+.btn-secondary:hover {
+  background: var(--surface-hover);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.btn-accent:hover {
+  background: var(--accent-dark);
+}
+
+/* Badge Styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+.badge-fresh-very {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--fresh-very);
+}
+
+.badge-fresh-good {
+  background: rgba(132, 204, 22, 0.15);
+  color: var(--fresh-good);
+}
+
+.badge-fresh-normal {
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--fresh-normal);
+}
+
+.badge-fresh-expiring {
+  background: rgba(234, 88, 12, 0.15);
+  color: var(--fresh-expiring);
+}
+
+/* Input Styles */
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--secondary-light);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-pulse-soft {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Gradient Backgrounds */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(180deg, var(--background) 0%, rgba(34, 197, 94, 0.1) 100%);
+}
+
+/* Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Freshness Progress Bar */
+.freshness-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--secondary-light);
+  overflow: hidden;
+}
+
+.freshness-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Category Icon Container */
+.category-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: var(--surface);
+  font-size: 2rem;
+  transition: all 0.2s ease;
+}
+
+.category-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Product Image Container */
+.product-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+/* Mobile Bottom Nav */
+@media (max-width: 768px) {
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--secondary-light);
+    padding: 0.5rem 0;
+    z-index: 50;
+  }
 }

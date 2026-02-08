@@ -46,6 +46,7 @@ model Farm {
 
   batches         HarvestBatch[]
   products        Product[]        @relation("FarmProducts")
+  pendingProducts PendingProduct[]
 }
 
 model Product {

@@ -66,7 +66,8 @@ export default function LoginPage() {
             }
 
             login(data);
-            toast.success('เข้าสู่ระบบสำเร็จ', { description: `ยินดีต้อนรับคุณ ${data.user.name}` });
+            const displayName = (data && (data.name || data.fullName)) || (data.user && data.user.name) || '';
+            toast.success('เข้าสู่ระบบสำเร็จ', { description: `ยินดีต้อนรับคุณ ${displayName}` });
             router.push('/account');
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err);

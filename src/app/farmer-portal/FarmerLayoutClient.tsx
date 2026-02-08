@@ -5,7 +5,16 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
-export default function FarmerLayoutClient({ children }: { children: React.ReactNode }) {
+type ServerUser = {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    role?: string | null;
+    phone?: string | null;
+    farm?: { id: string; name?: string | null } | null;
+};
+
+export default function FarmerLayoutClient({ children, serverUser }: { children: React.ReactNode; serverUser?: ServerUser }) {
     const pathname = usePathname();
     const [isSidebarOpen, setSidebarOpen] = useState(false);
 
@@ -20,21 +29,9 @@ export default function FarmerLayoutClient({ children }: { children: React.React
     function UserSummary() {
         const { user, loading, logout } = useAuth();
 
-        let displayName = 'ผู้ใช้';
-        let farmName = '';
-
-        if (user && typeof user === 'object') {
-            const u = user as unknown as Record<string, unknown>;
-            if ('name' in u && u.name) displayName = String(u.name);
-            else if ('displayName' in u && u.displayName) displayName = String(u.displayName);
-
-            const maybeFarm = u.farm;
-            if (maybeFarm && typeof maybeFarm === 'object' && 'name' in (maybeFarm as unknown as Record<string, unknown>)) {
-                farmName = String((maybeFarm as unknown as Record<string, unknown>).name ?? '');
-            } else if ('farmName' in u && u.farmName) {
-                farmName = String(u.farmName);
-            }
-        }
+        // Prefer server-provided user for immediate accurate display
+        const displayName = serverUser?.name ?? user?.name ?? (user as any)?.displayName ?? 'ผู้ใช้';
+        const farmName = serverUser?.farm?.name ?? (user as any)?.farm?.name ?? (user as any)?.farmName ?? '';
 
         return (
             <div>

@@ -67,6 +67,27 @@ model Product {
   farms         Farm[] @relation("FarmProducts")
 }
 
+model PendingProduct {
+  id            String   @id @default(cuid())
+  nameTh        String
+  nameEn        String
+  slug          String   @unique
+  description   String?
+  unit          String   @default("kg")
+  basePrice     Float    @default(0)
+  image         String?
+  storageTemp   String?
+  shelfLifeDays Int      @default(3)
+
+  categoryId    String?
+  farmId        String
+  farm          Farm     @relation(fields: [farmId], references: [id])
+
+  isApproved    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Category {
   id        String    @id @default(cuid())
   nameTh    String

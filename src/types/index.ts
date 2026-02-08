@@ -88,6 +88,7 @@ export interface Address {
 export interface User {
     id: string;
     email: string;
+    password?: string;
     phone?: string;
     name?: string;
     fullName?: string; // legacy support if needed

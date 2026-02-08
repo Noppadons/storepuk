@@ -30,8 +30,9 @@ export default function FarmerLayoutClient({ children, serverUser }: { children:
         const { user, loading, logout } = useAuth();
 
         // Prefer server-provided user for immediate accurate display
-        const displayName = serverUser?.name ?? user?.name ?? (user as any)?.displayName ?? 'ผู้ใช้';
-        const farmName = serverUser?.farm?.name ?? (user as any)?.farm?.name ?? (user as any)?.farmName ?? '';
+        const authExtras = user as unknown as { displayName?: string; farm?: { name?: string }; farmName?: string };
+        const displayName = serverUser?.name ?? user?.name ?? authExtras.displayName ?? 'ผู้ใช้';
+        const farmName = serverUser?.farm?.name ?? authExtras.farm?.name ?? authExtras.farmName ?? '';
 
         return (
             <div>

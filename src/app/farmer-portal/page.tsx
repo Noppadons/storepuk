@@ -39,8 +39,8 @@ export default async function FarmerDashboard() {
 
     const totalSales = orders.reduce((total, order) => {
         // sum only items that belong to this farm
-        const farmItems = order.items.filter((i: any) => i.batch && i.batch.farmId === farm.id);
-        return total + farmItems.reduce((s: number, it: any) => s + (it.totalPrice || 0), 0);
+        const farmItems = order.items.filter(i => i.batch && i.batch.farmId === farm.id);
+        return total + farmItems.reduce((s, it) => s + (it.totalPrice || 0), 0);
     }, 0);
 
     const activeBatches = batches.filter(b => b.status === 'available' || b.status === 'low_stock');

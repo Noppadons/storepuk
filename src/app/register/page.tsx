@@ -23,6 +23,8 @@ export default function RegisterPage() {
         confirmPassword: '',
         acceptTerms: false,
     });
+    // default role 'customer'
+    const [role, setRole] = useState<'customer' | 'farmer'>('customer');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,7 +62,8 @@ export default function RegisterPage() {
                     fullName: formData.fullName,
                     email: formData.email,
                     phone: formData.phone,
-                    password: formData.password
+                    password: formData.password,
+                    role
                 }),
             });
 
@@ -122,6 +125,19 @@ export default function RegisterPage() {
                         </AnimatePresence>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-foreground/30 px-1">ประเภทบัญชี</label>
+                                <div className="relative">
+                                    <select
+                                        value={role}
+                                        onChange={(e) => setRole(e.target.value as 'customer' | 'farmer')}
+                                        className="w-full bg-foreground/5 border-none rounded-2xl py-4 pl-4 pr-4 font-bold focus:ring-2 focus:ring-primary/20 transition-all"
+                                    >
+                                        <option value="customer">ผู้ซื้อ / Customer</option>
+                                        <option value="farmer">เกษตรกร / Farmer</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-foreground/30 px-1">ชื่อ-นามสกุล</label>
                                 <div className="relative group">

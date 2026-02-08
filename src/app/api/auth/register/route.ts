@@ -6,7 +6,7 @@ import { hashPassword, signToken } from '@/lib/auth';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { email, password, fullName, phone } = body;
+        const { email, password, fullName, phone, role: requestedRole, adminInviteCode } = body;
 
         if (!email || !password) {
             return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });
@@ -21,6 +21,22 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
         }
 
+        // Validate role
+        const allowedRoles = ['customer', 'farmer'];
+        let roleToSet = 'customer';
+        if (typeof requestedRole === 'string' && allowedRoles.includes(requestedRole)) {
+            roleToSet = requestedRole;
+        }
+
+        // Support creating admin only with a secret invite code
+        if (requestedRole === 'admin') {
+            const secret = process.env.ADMIN_INVITE_CODE;
+            if (!secret || adminInviteCode !== secret) {
+                return NextResponse.json({ error: 'Invalid invite code' }, { status: 403 });
+            }
+            roleToSet = 'admin';
+        }
+
         // Create user with hashed password
         const hashedPassword = await hashPassword(password);
         const user = await prisma.user.create({
@@ -29,7 +45,7 @@ export async function POST(request: Request) {
                 password: hashedPassword,
                 name: fullName || email.split('@')[0],
                 phone,
-                role: 'customer'
+                role: roleToSet
             }
         });
 

@@ -1,84 +1,64 @@
 
-'use client';
-
-import { useAuth } from '@/context/AuthContext';
-import { formatPrice, formatThaiDate } from '@/lib/utils';
+import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/auth';
 import Link from 'next/link';
-import { useEffect, useState, useCallback } from 'react';
-import { HarvestBatch, Order } from '@/types';
+import { formatPrice, formatThaiDate } from '@/lib/utils';
 
-export default function FarmerDashboard() {
-    const { user } = useAuth();
-    const [batches, setBatches] = useState<HarvestBatch[]>([]);
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
+export default async function FarmerDashboard() {
+    const session = await getSession();
+    if (!session) return null; // layout already redirects if unauthorized
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        try {
-            // Fetch Batches
-            const batchesRes = await fetch(`/api/batches?userId=${user?.id}`);
-            const batchesData = await batchesRes.json();
-            if (Array.isArray(batchesData)) {
-                setBatches(batchesData);
-            }
+    const userId = session.userId as string;
 
-            // Fetch Orders (My Farm's items)
-            const ordersRes = await fetch(`/api/orders?farmerId=${user?.id}`);
-            const ordersData = await ordersRes.json();
-            if (Array.isArray(ordersData)) {
-                setOrders(ordersData);
-            }
-        } catch (error) {
-            console.error('Failed to fetch farmer data:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, [user?.id]);
-
-    useEffect(() => {
-        if (user) {
-            fetchData();
-        }
-    }, [user, fetchData]);
-
-    if (!user) {
-        return <div className="p-8 text-center">กรุณาเข้าสู่ระบบ</div>;
+    // Fetch farm and related data
+    const farm = await prisma.farm.findUnique({ where: { userId } });
+    if (!farm) {
+        return (
+            <div className="p-8">
+                <h2 className="text-xl font-semibold">ยังไม่มีฟาร์ม</h2>
+                <p className="text-gray-600 mt-2">สร้างโปรไฟล์ฟาร์มของคุณเพื่อเริ่มขายสินค้า</p>
+                <Link href="/farmer-portal/settings" className="inline-block mt-4 btn btn-primary">สร้างฟาร์ม</Link>
+            </div>
+        );
     }
 
-    if (loading) {
-        return <div className="p-8 text-center">Loading...</div>;
-    }
+    const batches = await prisma.harvestBatch.findMany({
+        where: { farmId: farm.id },
+        include: { product: true },
+        orderBy: { harvestDate: 'desc' }
+    });
 
-    // Filter data logic
-    const activeBatches = batches.filter(b => b.status === 'available' || b.status === 'low_stock');
-    const lowStockBatches = batches.filter(b => b.status === 'low_stock' || (b.status === 'available' && b.remainingKg < 10 && b.remainingKg > 0));
+    const orders = await prisma.order.findMany({
+        where: { items: { some: { batch: { farmId: farm.id } } } },
+        include: {
+            items: { include: { batch: { include: { product: true } } } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20
+    });
 
-    // Calculate stats
-    // We need to calculate sales from orders that contain OUR items.
-    // The API /api/orders?farmerId=... returns the full order, but we should only count our items.
     const totalSales = orders.reduce((total, order) => {
-        const myBatchIds = new Set(batches.map(b => b.id));
-        const myItems = order.items.filter(item => myBatchIds.has(item.batch.id));
-        return total + myItems.reduce((sum: number, item) => sum + (item.totalPrice || 0), 0);
+        // sum only items that belong to this farm
+        const farmItems = order.items.filter((i: any) => i.batch && i.batch.farmId === farm.id);
+        return total + farmItems.reduce((s: number, it: any) => s + (it.totalPrice || 0), 0);
     }, 0);
 
+    const activeBatches = batches.filter(b => b.status === 'available' || b.status === 'low_stock');
+    const lowStockBatches = batches.filter(b => b.status === 'low_stock' || (b.status === 'available' && b.remainingKg < 10 && b.remainingKg > 0));
     const pendingOrdersCount = orders.filter(o => o.status === 'pending' || o.status === 'confirmed').length;
 
     return (
         <div>
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold">สวัสดี, {user.name} 👋</h1>
-                    <p className="text-gray-500">ยินดีต้อนรับสู่แดชบอร์ดจัดการฟาร์มของคุณ</p>
+                    <h1 className="text-2xl font-bold">สวัสดี, {farm.name} 👋</h1>
+                    <p className="text-gray-500">แดชบอร์ดจัดการฟาร์มของคุณ</p>
                 </div>
                 <Link href="/farmer-portal/inventory/new" className="hidden md:flex btn btn-primary items-center gap-2">
                     <span>+</span> เพิ่มล็อตผักใหม่
                 </Link>
-                
             </div>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <div className="card p-6 flex flex-col justify-between">
                     <div className="flex justify-between items-start mb-4">
@@ -125,7 +105,6 @@ export default function FarmerDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Recent Orders */}
                 <div className="card p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-semibold text-lg">คำสั่งซื้อล่าสุด</h3>
@@ -137,7 +116,7 @@ export default function FarmerDashboard() {
                                 <div key={order.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center font-bold text-xs text-gray-500">
-                                            {order.orderNumber.slice(-4)}
+                                            {String(order.orderNumber).slice(-4)}
                                         </div>
                                         <div>
                                             <p className="font-medium text-sm">#{order.orderNumber}</p>
@@ -162,7 +141,6 @@ export default function FarmerDashboard() {
                     </div>
                 </div>
 
-                {/* Low Stock Alert */}
                 <div className="card p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-semibold text-lg text-amber-600 flex items-center gap-2">
@@ -180,7 +158,7 @@ export default function FarmerDashboard() {
                                         </div>
                                         <div>
                                             <p className="font-medium text-sm">{batch.product?.nameTh || 'Batch #' + batch.id}</p>
-                                            <p className="text-xs text-gray-500">{formatThaiDate(new Date(batch.harvestDate as string))}</p>
+                                            <p className="text-xs text-gray-500">{formatThaiDate(String(batch.harvestDate))}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">

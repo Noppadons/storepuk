@@ -1,7 +1,7 @@
 
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, signToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
     try {
@@ -33,11 +33,24 @@ export async function POST(request: Request) {
             }
         });
 
-        // Return user without password
-        const userWithoutPassword = { ...user } as Record<string, unknown>;
-        delete (userWithoutPassword as { password?: unknown }).password;
+        // Sign token and set cookie so user is logged in immediately after register
+        const token = await signToken({ userId: user.id, email: user.email, role: user.role });
+        const response = NextResponse.json((() => {
+            const u = { ...user } as Record<string, unknown>;
+            delete (u as { password?: unknown }).password;
+            return u;
+        })());
 
-        return NextResponse.json(userWithoutPassword);
+        response.cookies.set({
+            name: 'sodsai_token',
+            value: token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24
+        });
+
+        return response;
     } catch (error: unknown) {
         console.error('Registration error:', error);
         const message = error instanceof Error ? error.message : String(error);

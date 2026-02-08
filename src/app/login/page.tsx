@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { User as AppUser } from '@/types';
 import { Mail, Phone, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -33,9 +34,20 @@ export default function LoginPage() {
 
     const handleLogin = async () => {
         setError('');
-        if (loginMethod === 'email' && (!email || !password)) {
-            setError('กรุณากรอกอีเมลและรหัสผ่าน');
-            return;
+        if (loginMethod === 'email') {
+            if (!email || !password) {
+                setError('กรุณากรอกอีเมลและรหัสผ่าน');
+                return;
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                setError('กรุณากรอกอีเมลในรูปแบบที่ถูกต้อง');
+                return;
+            }
+            if (password.length < 8) {
+                setError('รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
+                return;
+            }
         }
 
         setLoading(true);
@@ -60,14 +72,15 @@ export default function LoginPage() {
             });
 
             const data = await res.json();
-
             if (!res.ok) {
-                throw new Error(data.error || 'การเข้าสู่ระบบล้มเหลว');
+                throw new Error(data?.error || 'การเข้าสู่ระบบล้มเหลว');
             }
 
-            login(data);
-            const displayName = (data && (data.name || data.fullName)) || (data.user && data.user.name) || '';
-            toast.success('เข้าสู่ระบบสำเร็จ', { description: `ยินดีต้อนรับคุณ ${displayName}` });
+            // Expecting the API to return the user object at top-level
+            const user = data as Record<string, unknown>;
+            login(user as unknown as AppUser);
+            const displayName = (user && (user.name || user.fullName)) || '';
+            toast.success('เข้าสู่ระบบสำเร็จ', { description: displayName ? `ยินดีต้อนรับคุณ ${displayName}` : undefined });
             router.push('/account');
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err);

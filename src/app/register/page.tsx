@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, Phone, Lock, ShieldCheck, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+import type { User as AppUser } from '@/types';
 import { toast } from 'sonner';
 
 export default function RegisterPage() {
@@ -38,6 +39,17 @@ export default function RegisterPage() {
             return;
         }
 
+        // Basic client-side validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setError('กรุณากรอกอีเมลที่ถูกต้อง');
+            return;
+        }
+        if (formData.password.length < 8) {
+            setError('รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -53,12 +65,13 @@ export default function RegisterPage() {
             });
 
             const data = await res.json();
-
             if (!res.ok) {
-                throw new Error(data.error || 'การสมัครสมาชิกล้มเหลว');
+                throw new Error(data?.error || 'การสมัครสมาชิกล้มเหลว');
             }
 
-            login(data);
+            // API returns the created user at top-level and sets the auth cookie
+            const user = data as Record<string, unknown>;
+            login(user as unknown as AppUser);
             toast.success('ยินดีต้อนรับ!', { description: 'สมัครสมาชิกและเข้าสู่ระบบสำเร็จแล้ว' });
             router.push('/account');
         } catch (err: unknown) {

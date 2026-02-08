@@ -1,65 +1,62 @@
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-import { FreshnessInfo } from '@/types';
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
 
-export const calculateFreshness = (harvestDate: Date | string): FreshnessInfo => {
-    const date = new Date(harvestDate);
+export function calculateFreshness(harvestDate: Date) {
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const daysFromHarvest = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffTime = Math.abs(now.getTime() - harvestDate.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (daysFromHarvest <= 1) {
+    if (diffDays <= 1) {
         return {
+            labelTh: 'สดมากที่สุด',
             level: 'very_fresh',
-            labelTh: 'สดมาก',
-            labelEn: 'Very Fresh',
-            color: '#22c55e', // green-500
-            bgColor: '#dcfce7', // green-100
-            daysFromHarvest
+            color: '#16A34A',
+            bgColor: '#DCFCE7',
+            daysFromHarvest: diffDays
         };
-    } else if (daysFromHarvest <= 3) {
+    } else if (diffDays <= 3) {
         return {
+            labelTh: 'สดใหม่',
             level: 'fresh',
-            labelTh: 'สด',
-            labelEn: 'Fresh',
-            color: '#84cc16', // lime-500
-            bgColor: '#ecfccb', // lime-100
-            daysFromHarvest
+            color: '#65A30D',
+            bgColor: '#F7FEE7',
+            daysFromHarvest: diffDays
         };
-    } else if (daysFromHarvest <= 7) {
+    } else if (diffDays <= 5) {
         return {
+            labelTh: 'คุณภาพปกติ',
             level: 'normal',
-            labelTh: 'ปกติ',
-            labelEn: 'Normal',
-            color: '#eab308', // yellow-500
-            bgColor: '#fef9c3', // yellow-100
-            daysFromHarvest
+            color: '#CA8A04',
+            bgColor: '#FEF9C3',
+            daysFromHarvest: diffDays
         };
     } else {
         return {
+            labelTh: 'ใกล้หมดอายุ',
             level: 'expiring',
-            labelTh: 'ใกล้เสีย',
-            labelEn: 'Expiring',
-            color: '#f97316', // orange-500
-            bgColor: '#ffedd5', // orange-100
-            daysFromHarvest
+            color: '#EA580C',
+            bgColor: '#FFEDD5',
+            daysFromHarvest: diffDays
         };
     }
-};
+}
 
-export const formatThaiDate = (date: Date | string): string => {
+export function formatThaiDate(date: Date | string) {
     const d = new Date(date);
     return d.toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
         day: 'numeric',
+        month: 'short',
+        year: '2-digit',
     });
-};
+}
 
-export const formatPrice = (price: number): string => {
+export function formatPrice(price: number) {
     return new Intl.NumberFormat('th-TH', {
         style: 'currency',
         currency: 'THB',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
     }).format(price);
-};
+}

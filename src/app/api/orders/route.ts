@@ -1,31 +1,33 @@
 
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-// Create Order (Checkout)
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { userId, items, addressId, total, deliveryFee, discount, paymentMethod } = body;
+        const session = await getSession();
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-        // Validate
-        if (!userId || !items || !items.length || !addressId) {
+        const body = await request.json();
+        const { items, addressId, total, deliveryFee, discount } = body;
+        const userId = session.userId as string;
+
+        if (!items || !items.length || !addressId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Generate Order Number (VEG-YYYYMMDD-XXXX)
         const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         const count = await prisma.order.count();
         const orderNumber = `VEG-${dateStr}-${(count + 1).toString().padStart(4, '0')}`;
 
-        // Prepare items creation
-        // Note: Prices should ideally be re-fetched from DB to prevent tampering.
-        // For MVP, trusting payload but verifying batch availability.
+        type OrderItemInput = { batchId: string; quantityKg: number; unitPrice: number; totalPrice: number };
+        const itemsInput = items as OrderItemInput[];
 
-        // Check stock availability
-        for (const item of items) {
+        for (const item of itemsInput) {
             const batch = await prisma.harvestBatch.findUnique({ where: { id: item.batchId } });
             if (!batch) throw new Error(`Batch ${item.batchId} not found`);
             if (batch.remainingKg < item.quantityKg) {
@@ -33,9 +35,7 @@ export async function POST(request: Request) {
             }
         }
 
-        // Transaction to ensure stock reduction
         const result = await prisma.$transaction(async (tx) => {
-            // Create Order
             const order = await tx.order.create({
                 data: {
                     orderNumber,
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
                     discount: discount || 0,
                     subtotal: total - (deliveryFee || 0) + (discount || 0),
                     items: {
-                        create: items.map((item: any) => ({
+                        create: itemsInput.map((item) => ({
                             batchId: item.batchId,
                             quantityKg: item.quantityKg,
                             unitPrice: item.unitPrice,
@@ -57,13 +57,11 @@ export async function POST(request: Request) {
                 }
             });
 
-            // Update Stock
-            for (const item of items) {
+            for (const item of itemsInput) {
                 await tx.harvestBatch.update({
                     where: { id: item.batchId },
                     data: {
                         remainingKg: { decrement: item.quantityKg }
-                        // Status update logic requires conditional check, skipping for simple update
                     }
                 });
             }
@@ -72,42 +70,43 @@ export async function POST(request: Request) {
         });
 
         return NextResponse.json(result);
-
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Order creation error:', error);
-        return NextResponse.json({ error: error.message || 'Failed to create order' }, { status: 500 });
+        const message = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({ error: message || 'Failed to create order' }, { status: 500 });
     }
 }
 
-// Get Orders (User or Admin)
 export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const farmerId = searchParams.get('farmerId');
-
     try {
-        // If userId provided, fetch for that user. If farmerId, fetch for farmer. If neither, fetch ALL (Admin mode)
-        const where: any = {};
+        const session = await getSession();
+        if (!session) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-        if (userId) {
-            where.userId = userId;
-        } else if (farmerId) {
-            // Find orders containing items from this farmer's farm
-            where.items = {
-                some: {
-                    batch: {
-                        farm: {
-                            userId: farmerId
-                        }
-                    }
-                }
-            };
+        const { searchParams } = new URL(request.url);
+        const userId = searchParams.get('userId');
+        const farmerId = searchParams.get('farmerId');
+
+        const where: Record<string, unknown> = {};
+
+        if (session.role === 'customer') {
+            where.userId = session.userId;
+        }
+        else if (session.role === 'admin') {
+            if (userId) where.userId = userId;
+            else if (farmerId) {
+                where.items = { some: { batch: { farm: { userId: farmerId } } } };
+            }
+        }
+        else if (session.role === 'farmer') {
+            where.items = { some: { batch: { farm: { userId: session.userId } } } };
         }
 
         const orders = await prisma.order.findMany({
             where,
             include: {
-                user: { select: { name: true, email: true, phone: true } }, // Include user info for Admin
+                user: { select: { name: true, email: true, phone: true } },
                 items: {
                     include: {
                         batch: {
@@ -129,9 +128,13 @@ export async function GET(request: Request) {
     }
 }
 
-// Update Order Status (Admin)
 export async function PATCH(request: Request) {
     try {
+        const session = await getSession();
+        if (!session || session.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { id, status } = body;
 

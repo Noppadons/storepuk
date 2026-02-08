@@ -1,6 +1,7 @@
 
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,15 +11,15 @@ export async function GET(request: Request) {
     const query = searchParams.get('q');
 
     try {
-        const where: any = {};
+        const where: Record<string, unknown> = {};
 
         if (categoryId && categoryId !== 'all') {
-            where.categoryId = categoryId; // or category.slug if frontend sends slug
+            where.categoryId = categoryId;
         }
 
         if (query) {
             where.OR = [
-                { nameTh: { contains: query } }, // SQLite doesn't support case-insensitive mode easily efficiently, but contains works
+                { nameTh: { contains: query } },
                 { nameEn: { contains: query } },
             ];
         }
@@ -49,6 +50,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
+        const session = await getSession();
+        if (!session || session.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { nameTh, nameEn, slug, description, unit, shelfLifeDays, storageTemp, basePrice, categoryId, images } = body;
 
@@ -76,6 +82,11 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
+        const session = await getSession();
+        if (!session || session.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { id, nameTh, nameEn, slug, description, unit, shelfLifeDays, storageTemp, basePrice, categoryId, images } = body;
 
@@ -103,14 +114,19 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-        return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
-    }
-
     try {
+        const session = await getSession();
+        if (!session || session.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+        }
+
         await prisma.product.delete({
             where: { id }
         });

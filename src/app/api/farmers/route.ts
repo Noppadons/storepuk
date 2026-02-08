@@ -1,6 +1,6 @@
-
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +31,11 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
     try {
+        const session = await getSession();
+        if (!session || session.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { farmId, isVerified } = body;
 

@@ -1,6 +1,7 @@
 
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { comparePassword, signToken } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,16 +23,35 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
-        // Check simple password match
-        // TODO: Use hashing in production
-        if (user.password !== password) {
+        // Check hashed password
+        const isMatch = await comparePassword(password, user.password);
+        if (!isMatch) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
         }
 
         // Return user without password
         const { password: _, ...userWithoutPassword } = user;
 
-        return NextResponse.json(userWithoutPassword);
+        // Sign JWT tokens
+        const token = await signToken({
+            userId: user.id,
+            email: user.email,
+            role: user.role
+        });
+
+        const response = NextResponse.json(userWithoutPassword);
+
+        // Set HttpOnly Cookie
+        response.cookies.set({
+            name: 'sodsai_token',
+            value: token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 // 24 hours
+        });
+
+        return response;
     } catch (error) {
         console.error('Login error:', error);
         return NextResponse.json({ error: 'Login failed' }, { status: 500 });

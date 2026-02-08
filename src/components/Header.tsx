@@ -1,167 +1,242 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
+import {
+    Search,
+    ShoppingCart,
+    User as UserIcon,
+    Menu,
+    X,
+    ChevronDown,
+    LogOut,
+    ShoppingBag,
+    UserCircle,
+    LayoutDashboard,
+    Sprout
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 export function Header() {
     const { user, logout } = useAuth();
     const { itemCount } = useCart();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => setIsScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     return (
-        <header className="glass sticky top-0 z-50">
+        <header className={cn(
+            "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
+            isScrolled ? "glass-premium py-2" : "bg-transparent py-4 border-transparent"
+        )}>
             <div className="container-app">
-                <div className="flex items-center justify-between h-16">
+                <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2">
-                        <span className="text-2xl">🥬</span>
-                        <span className="text-lg font-bold text-primary">
+                    <Link href="/" className="flex items-center gap-2 group">
+                        <motion.div
+                            whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+                            className="text-3xl"
+                        >
+                            🥬
+                        </motion.div>
+                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
                             มาซื้อผักกันเถอะ
                         </span>
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center gap-6">
-                        <Link href="/" className="text-foreground hover:text-primary transition-colors font-medium">
-                            หน้าแรก
-                        </Link>
-                        <Link href="/products" className="text-foreground-muted hover:text-primary transition-colors">
-                            สินค้าทั้งหมด
-                        </Link>
-                        <Link href="/about" className="text-foreground-muted hover:text-primary transition-colors">
-                            เกี่ยวกับเรา
-                        </Link>
+                    <nav className="hidden md:flex items-center gap-8">
+                        {[
+                            { name: 'หน้าแรก', href: '/' },
+                            { name: 'สินค้าทั้งหมด', href: '/products' },
+                            { name: 'เกี่ยวกับเรา', href: '/about' },
+                        ].map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className="text-sm font-semibold text-foreground/80 hover:text-primary transition-colors relative group"
+                            >
+                                {item.name}
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full" />
+                            </Link>
+                        ))}
+
                         {user?.role === 'farmer' && (
-                            <Link href="/farmer-portal" className="text-primary font-medium hover:text-primary-dark transition-colors">
+                            <Link href="/farmer-portal" className="flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary-dark transition-colors bg-primary/5 px-3 py-1.5 rounded-lg">
+                                <Sprout size={16} />
                                 เมนูเกษตรกร
                             </Link>
                         )}
                         {user?.role === 'admin' && (
-                            <Link href="/admin" className="text-primary font-medium hover:text-primary-dark transition-colors">
+                            <Link href="/admin" className="flex items-center gap-1.5 text-sm font-bold text-primary hover:text-primary-dark transition-colors bg-primary/5 px-3 py-1.5 rounded-lg">
+                                <LayoutDashboard size={16} />
                                 ผู้ดูแลระบบ
                             </Link>
                         )}
                     </nav>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         {/* Search Button */}
-                        <button
+                        <motion.button
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => setIsSearchOpen(!isSearchOpen)}
-                            className="p-2 rounded-full hover:bg-surface-hover transition-colors"
-                            aria-label="ค้นหา"
+                            className="p-2.5 rounded-xl hover:bg-primary/10 text-foreground/70 transition-colors"
                         >
-                            <svg className="w-6 h-6 text-foreground-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
+                            <Search size={20} />
+                        </motion.button>
 
-                        {/* User */}
+                        {/* Cart */}
+                        <motion.div whileTap={{ scale: 0.9 }} className="relative">
+                            <Link
+                                href="/cart"
+                                className="flex p-2.5 rounded-xl hover:bg-primary/10 text-foreground/70 transition-colors"
+                            >
+                                <ShoppingCart size={20} />
+                                <AnimatePresence>
+                                    {itemCount > 0 && (
+                                        <motion.span
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            exit={{ scale: 0 }}
+                                            className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-surface shadow-lg"
+                                        >
+                                            {itemCount}
+                                        </motion.span>
+                                    )}
+                                </AnimatePresence>
+                            </Link>
+                        </motion.div>
+
+                        <div className="h-6 w-px bg-foreground/10 mx-1 hidden md:block" />
+
+                        {/* User Profile */}
                         {user ? (
-                            <div className="relative group">
-                                <Link href="/account" className="hidden md:flex p-2 rounded-full hover:bg-surface-hover transition-colors items-center gap-2" aria-label="บัญชีผู้ใช้">
+                            <div className="relative group/user">
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    className="hidden md:flex items-center gap-2 p-1.5 pl-3 rounded-xl border border-foreground/10 hover:border-primary/50 transition-all hover:shadow-sm"
+                                >
+                                    <div className="text-right hidden lg:block">
+                                        <p className="text-xs font-bold leading-tight truncate max-w-[100px]">{user.name}</p>
+                                        <p className="text-[10px] text-foreground-muted leading-tight capitalize">{user.role}</p>
+                                    </div>
                                     {user.image ? (
-                                        <img src={user.image} alt={user.name || 'User'} className="w-8 h-8 rounded-full object-cover" />
+                                        <img src={user.image} alt={user.name || ''} className="w-8 h-8 rounded-lg object-cover shadow-sm" />
                                     ) : (
-                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                            {user.name?.[0]?.toUpperCase() || 'U'}
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                            {user.name?.[0]?.toUpperCase()}
                                         </div>
                                     )}
-                                </Link>
-                                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden group-hover:block animate-fadeIn">
-                                    <div className="px-4 py-2 border-b">
-                                        <p className="font-medium truncate">{user.name}</p>
-                                        <p className="text-xs text-foreground-muted truncate">{user.email}</p>
+                                    <ChevronDown size={14} className="text-foreground/40" />
+                                </motion.button>
+
+                                {/* Dropdown */}
+                                <div className="absolute right-0 top-full pt-2 opacity-0 translate-y-2 pointer-events-none group-hover/user:opacity-100 group-hover/user:translate-y-0 group-hover/user:pointer-events-auto transition-all duration-200">
+                                    <div className="w-56 glass-premium rounded-2xl p-2 shadow-2xl border border-foreground/5">
+                                        <Link href="/account" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/10 transition-colors text-sm font-medium">
+                                            <UserCircle size={18} className="text-primary" /> บัญชีของฉัน
+                                        </Link>
+                                        <Link href="/account/orders" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/10 transition-colors text-sm font-medium">
+                                            <ShoppingBag size={18} className="text-primary" /> รายการสั่งซื้อ
+                                        </Link>
+                                        <div className="h-px bg-foreground/5 my-1" />
+                                        <button
+                                            onClick={logout}
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-50 text-red-500 transition-colors text-sm font-medium"
+                                        >
+                                            <LogOut size={18} /> ออกจากระบบ
+                                        </button>
                                     </div>
-                                    <Link href="/account" className="block px-4 py-2 hover:bg-surface-hover">บัญชีของฉัน</Link>
-                                    <Link href="/account/orders" className="block px-4 py-2 hover:bg-surface-hover">รายการสั่งซื้อ</Link>
-                                    <button onClick={logout} className="block w-full text-left px-4 py-2 hover:bg-surface-hover text-red-500">ออกจากระบบ</button>
                                 </div>
                             </div>
                         ) : (
-                            <Link href="/login" className="hidden md:flex p-2 rounded-full hover:bg-surface-hover transition-colors" aria-label="เข้าสู่ระบบ">
-                                <svg className="w-6 h-6 text-foreground-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
+                            <Link
+                                href="/login"
+                                className="btn-primary rounded-xl !py-2 !px-5 text-sm !font-bold"
+                            >
+                                เข้าสู่ระบบ
                             </Link>
                         )}
-
-                        {/* Cart */}
-                        <Link
-                            href="/cart"
-                            className="relative p-2 rounded-full hover:bg-surface-hover transition-colors"
-                            aria-label="ตะกร้าสินค้า"
-                        >
-                            <svg className="w-6 h-6 text-foreground-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            {itemCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">
-                                    {itemCount}
-                                </span>
-                            )}
-                        </Link>
 
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="md:hidden p-2 rounded-full hover:bg-surface-hover transition-colors"
-                            aria-label="เมนู"
+                            className="md:hidden p-2.5 rounded-xl hover:bg-primary/10 text-foreground/70 transition-colors"
                         >
-                            <svg className="w-6 h-6 text-foreground-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                {isMenuOpen ? (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                ) : (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                )}
-                            </svg>
+                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
                     </div>
                 </div>
 
-                {/* Search Bar */}
-                {isSearchOpen && (
-                    <div className="py-4 animate-fadeIn">
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="ค้นหาผักสด..."
-                                className="input pl-12"
-                                autoFocus
-                            />
-                            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                    </div>
-                )}
-
                 {/* Mobile Menu */}
-                {isMenuOpen && (
-                    <nav className="md:hidden py-4 border-t border-secondary-light animate-fadeIn">
-                        <div className="flex flex-col gap-2">
-                            <Link href="/" className="px-4 py-3 rounded-lg hover:bg-surface-hover transition-colors font-medium">
-                                หน้าแรก
-                            </Link>
-                            <Link href="/products" className="px-4 py-3 rounded-lg hover:bg-surface-hover transition-colors">
-                                สินค้าทั้งหมด
-                            </Link>
-                            <Link href="/about" className="px-4 py-3 rounded-lg hover:bg-surface-hover transition-colors">
-                                เกี่ยวกับเรา
-                            </Link>
-                            <Link href="/farmers" className="px-4 py-3 rounded-lg hover:bg-surface-hover transition-colors">
-                                ฟาร์มของเรา
-                            </Link>
-                            <Link href="/account" className="px-4 py-3 rounded-lg hover:bg-surface-hover transition-colors">
-                                บัญชีของฉัน
-                            </Link>
-                        </div>
-                    </nav>
-                )}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <motion.nav
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="md:hidden overflow-hidden"
+                        >
+                            <div className="py-6 flex flex-col gap-2">
+                                {[
+                                    { name: 'หน้าแรก', href: '/' },
+                                    { name: 'สินค้าทั้งหมด', href: '/products' },
+                                    { name: 'เกี่ยวกับเรา', href: '/about' },
+                                    { name: 'บัญชีของฉัน', href: '/account' },
+                                ].map((item) => (
+                                    <Link
+                                        key={item.name}
+                                        href={item.href}
+                                        className="px-4 py-3 rounded-xl hover:bg-primary/10 font-bold transition-all active:scale-95"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        {item.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        </motion.nav>
+                    )}
+                </AnimatePresence>
+
+                {/* Search Overlay */}
+                <AnimatePresence>
+                    {isSearchOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="py-4"
+                        >
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40" size={20} />
+                                <input
+                                    type="text"
+                                    placeholder="ค้นหาผักสดจากฟาร์ม..."
+                                    className="w-full py-4 pl-12 pr-4 glass-premium rounded-2xl outline-none border-none focus:ring-2 ring-primary/30 transition-shadow transition-all"
+                                    autoFocus
+                                />
+                                <button
+                                    onClick={() => setIsSearchOpen(false)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-foreground/5 hover:bg-foreground/10 px-2 py-1 rounded-md transition-colors"
+                                >
+                                    ESC
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </header>
     );
 }
+

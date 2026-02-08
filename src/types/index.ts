@@ -34,7 +34,7 @@ export interface HarvestBatch {
     id: string;
     productId: string;
     // farmer: Farmer; // Simplify for now or match seeding structure
-    farmer?: any; // To avoid circular dep complexity or just accept the nested structure
+    farmer?: Farmer; // Use `Farmer` type instead of `any` to satisfy type checks
     harvestDate: Date | string; // Date on server, string on client
     quantityKg: number;
     remainingKg: number;
@@ -45,6 +45,7 @@ export interface HarvestBatch {
     status: 'available' | 'low_stock' | 'sold_out' | 'expired';
     farm?: Farm; // Added for relation
     farmId?: string;
+    product?: Product;
 }
 
 export interface Product {

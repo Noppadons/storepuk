@@ -78,7 +78,7 @@ export default function InventoryPage() {
                                                     🥬
                                                 </div>
                                                 <div className="font-medium text-gray-800">
-                                                    {(batch as any).product?.nameTh || 'ไม่ระบุชื่อสินค้า'}
+                                                    {batch.product?.nameTh || 'ไม่ระบุชื่อสินค้า'}
                                                 </div>
                                             </div>
                                         </td>

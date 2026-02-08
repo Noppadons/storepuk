@@ -27,36 +27,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check localStorage on mount
-        const storedUser = localStorage.getItem('sodsai_user');
-        if (storedUser) {
+        // Check session via API on mount
+        const checkSession = async () => {
             try {
-                setUser(JSON.parse(storedUser));
+                const res = await fetch('/api/auth/me');
+                if (res.ok) {
+                    const userData = await res.json();
+                    setUser(userData);
+                }
             } catch (e) {
-                console.error('Failed to parse user from storage');
-                localStorage.removeItem('sodsai_user');
+                console.error('Failed to check session');
+            } finally {
+                setLoading(false);
             }
-        }
-        setLoading(false);
+        };
+
+        checkSession();
     }, []);
 
     const login = (userData: User) => {
+        // Cookie is already set by the server during login API call
         setUser(userData);
-        localStorage.setItem('sodsai_user', JSON.stringify(userData));
     };
 
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem('sodsai_user');
-        // Optional: redirect to login
-        window.location.href = '/login';
+    const logout = async () => {
+        try {
+            await fetch('/api/auth/me', { method: 'DELETE' });
+            setUser(null);
+            // Redirect to home
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Fallback
+            setUser(null);
+            window.location.href = '/';
+        }
     };
 
     const updateUser = (userData: Partial<User>) => {
         if (!user) return;
-        const newUser = { ...user, ...userData };
-        setUser(newUser as User);
-        localStorage.setItem('sodsai_user', JSON.stringify(newUser));
+        setUser({ ...user, ...userData } as User);
     };
 
     return (

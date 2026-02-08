@@ -7,8 +7,8 @@ import { Product, Category } from '@/types'; // or Prisma types
 import Link from 'next/link';
 
 interface ProductsClientProps {
-    initialProducts: any[]; // using any to avoid strict Prisma type mapping issues for now, or use shared types if they match
-    categories: any[];
+    initialProducts: Product[];
+    categories: Category[];
 }
 
 export default function ProductsClient({ initialProducts, categories }: ProductsClientProps) {

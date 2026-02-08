@@ -58,17 +58,10 @@ export default function FarmerDashboard() {
     // We need to calculate sales from orders that contain OUR items.
     // The API /api/orders?farmerId=... returns the full order, but we should only count our items.
     const totalSales = orders.reduce((total, order) => {
-        // Filter items for this farmer's products/batches
-        // But we don't have easy `item.batch.farm.userId` check here unless we have deep include.
-        // API response includes: items -> batch -> product.
-        // In GET /api/orders, we included nested relations.
-        // But `farm` info might be missing in `batch` include in `orders/route.ts`.
-        // Let's assume for now valid orders for this farmer imply sales.
-        // Actually, precise calc requires checking batch ownership.
-        // Let's iterate items and check batchId against our batches list IDs (if available).
         const myBatchIds = new Set(batches.map(b => b.id));
-        const myItems = order.items.filter((item: any) => myBatchIds.has(item.batchId));
-        return total + myItems.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+        type OrderItemMinimal = { batchId: string; totalPrice?: number };
+        const myItems = (order.items as OrderItemMinimal[]).filter(item => myBatchIds.has(item.batchId));
+        return total + myItems.reduce((sum: number, item) => sum + (item.totalPrice || 0), 0);
     }, 0);
 
     const pendingOrdersCount = orders.filter(o => o.status === 'pending' || o.status === 'confirmed').length;
@@ -148,7 +141,7 @@ export default function FarmerDashboard() {
                                         </div>
                                         <div>
                                             <p className="font-medium text-sm">#{order.orderNumber}</p>
-                                            <p className="text-xs text-gray-500">{formatThaiDate(order.createdAt as any)}</p>
+                                            <p className="text-xs text-gray-500">{formatThaiDate(new Date(order.createdAt as string))}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -186,8 +179,8 @@ export default function FarmerDashboard() {
                                             <div className="w-full h-full flex items-center justify-center text-xs">🥬</div>
                                         </div>
                                         <div>
-                                            <p className="font-medium text-sm">{(batch as any).product?.nameTh || 'Batch #' + batch.id}</p>
-                                            <p className="text-xs text-gray-500">{formatThaiDate(batch.harvestDate as any)}</p>
+                                            <p className="font-medium text-sm">{batch.product?.nameTh || 'Batch #' + batch.id}</p>
+                                            <p className="text-xs text-gray-500">{formatThaiDate(new Date(batch.harvestDate as string))}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">

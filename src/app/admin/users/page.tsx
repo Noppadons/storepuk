@@ -38,7 +38,7 @@ export default function AdminUsersPage() {
             });
 
             if (res.ok) {
-                setUsers(users.map(u => u.id === userId ? { ...u, role: newRole as any } : u));
+                setUsers(users.map(u => u.id === userId ? { ...u, role: newRole as User['role'] } : u));
             } else {
                 alert('อัปเดตบทบาทไม่สำเร็จ');
             }

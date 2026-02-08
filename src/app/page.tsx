@@ -59,7 +59,7 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
             {categories.map((category) => (
-              <CategoryCard key={category.id} category={category as any} />
+              <CategoryCard key={category.id} category={category as unknown as import('@/types').Category} />
             ))}
           </div>
         </section>
@@ -80,7 +80,7 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {newArrivals.map((product) => (
-              <ProductCard key={product.id} product={product as any} />
+              <ProductCard key={product.id} product={product as unknown as import('@/types').Product} />
             ))}
           </div>
         </section>

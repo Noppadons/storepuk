@@ -55,11 +55,10 @@ model Product {
   slug          String   @unique
   description   String?
   unit          String   @default("kg")
-  shelfLifeDays Int      @default(3)
-  minTemp       Int      @default(2)
-  maxTemp       Int      @default(8)
   basePrice     Float    @default(0)
   image         String?
+  storageTemp   String?   // Added for consistency with mock data
+  shelfLifeDays Int      @default(3)
   
   categoryId    String
   category      Category @relation(fields: [categoryId], references: [id])

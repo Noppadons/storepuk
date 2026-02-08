@@ -1,11 +1,14 @@
 
 import { PrismaClient } from '@prisma/client';
 import { categories, farmers, products, harvestBatches, users, orders } from '../src/data/mock-data';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
     console.log('Start seeding ...');
+    const saltRounds = 10;
+    const defaultPasswordHash = await bcrypt.hash('password123', saltRounds);
 
     // Clear existing data (Order matters because of constraints)
     await prisma.orderItem.deleteMany().catch(() => { });
@@ -39,6 +42,7 @@ async function main() {
                 id: farmer.id,
                 name: farmer.name,
                 email: `farmer_${farmer.id}@example.com`,
+                password: defaultPasswordHash,
                 role: 'farmer',
                 image: farmer.farm.image
             }
@@ -60,7 +64,19 @@ async function main() {
     }
 
     // 3. Products
-    for (const product of products as any[]) {
+    type ProductSeed = {
+        id: string;
+        nameTh: string;
+        nameEn: string;
+        slug: string;
+        description?: string | null;
+        unit?: string;
+        basePrice?: number;
+        image?: string | null;
+        category: { id: string };
+    };
+
+    for (const product of products as ProductSeed[]) {
         await prisma.product.create({
             data: {
                 id: product.id,
@@ -95,6 +111,7 @@ async function main() {
 
     // 5. Users (Customers)
     for (const user of users) {
+        const hashedPassword = user.password ? await bcrypt.hash(user.password, saltRounds) : defaultPasswordHash;
         const dbUser = await prisma.user.create({
             data: {
                 id: user.id,
@@ -102,7 +119,7 @@ async function main() {
                 email: user.email,
                 phone: user.phone,
                 role: user.role || 'customer',
-                password: user.password || 'password123',
+                password: hashedPassword,
                 loyaltyPoints: user.loyaltyPoints
             }
         });

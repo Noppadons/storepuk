@@ -46,3 +46,77 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
     }
 }
+
+export async function POST(request: Request) {
+    try {
+        const body = await request.json();
+        const { nameTh, nameEn, slug, description, unit, shelfLifeDays, storageTemp, basePrice, categoryId, images } = body;
+
+        const product = await prisma.product.create({
+            data: {
+                nameTh,
+                nameEn,
+                slug,
+                description,
+                unit,
+                shelfLifeDays: shelfLifeDays || 7,
+                storageTemp: storageTemp || '2-8°C',
+                basePrice: basePrice || 0,
+                categoryId,
+                images: images ? JSON.stringify(images) : undefined
+            }
+        });
+
+        return NextResponse.json(product);
+    } catch (error) {
+        console.error('Create product error:', error);
+        return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
+    }
+}
+
+export async function PUT(request: Request) {
+    try {
+        const body = await request.json();
+        const { id, nameTh, nameEn, slug, description, unit, shelfLifeDays, storageTemp, basePrice, categoryId, images } = body;
+
+        const product = await prisma.product.update({
+            where: { id },
+            data: {
+                nameTh,
+                nameEn,
+                slug,
+                description,
+                unit,
+                shelfLifeDays,
+                storageTemp,
+                basePrice,
+                categoryId,
+                images: images ? JSON.stringify(images) : undefined
+            }
+        });
+
+        return NextResponse.json(product);
+    } catch (error) {
+        console.error('Update product error:', error);
+        return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+        return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+    }
+
+    try {
+        await prisma.product.delete({
+            where: { id }
+        });
+        return NextResponse.json({ message: 'Product deleted' });
+    } catch (error) {
+        console.error('Delete product error:', error);
+        return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
+    }
+}

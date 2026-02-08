@@ -7,12 +7,20 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
-
-    if (!userId) {
-        return NextResponse.json({ error: 'User ID required' }, { status: 400 });
-    }
+    const all = searchParams.get('all');
 
     try {
+        if (all === 'true') {
+            const users = await prisma.user.findMany({
+                orderBy: { createdAt: 'desc' }
+            });
+            return NextResponse.json(users);
+        }
+
+        if (!userId) {
+            return NextResponse.json({ error: 'User ID required' }, { status: 400 });
+        }
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: {

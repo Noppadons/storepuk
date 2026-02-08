@@ -36,31 +36,8 @@ async function getCategories() {
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  let newArrivals: any[] = [];
-  let categories: any[] = [];
-  let dbError: string | null = null;
-
-  try {
-    newArrivals = await getProducts();
-    categories = await getCategories();
-  } catch (error: any) {
-    console.error('Home page DB error:', error);
-    dbError = error.message || 'Unknown database error';
-  }
-
-  if (dbError) {
-    return (
-      <div className="p-8 text-center">
-        <h1 className="text-red-500 font-bold mb-4">Database Error</h1>
-        <p className="bg-gray-100 p-4 rounded mb-4 overflow-auto max-w-lg mx-auto text-sm font-mono">
-          {dbError}
-        </p>
-        <p className="text-gray-500 text-sm">
-          Please check your Vercel Environment Variables and Supabase connection.
-        </p>
-      </div>
-    );
-  }
+  const newArrivals = await getProducts();
+  const categories = await getCategories();
 
   return (
     <div className="min-h-screen flex flex-col">

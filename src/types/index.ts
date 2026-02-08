@@ -66,20 +66,6 @@ export interface Product {
     farms?: Farm[];
 }
 
-export interface PendingProduct {
-    id: string;
-    nameTh: string;
-    nameEn: string;
-    slug: string;
-    description?: string | null;
-    unit?: string;
-    basePrice?: number;
-    categoryId?: string | null;
-    farmId: string;
-    isApproved?: boolean;
-    createdAt?: string;
-    farm?: Farm | null;
-}
 
 export interface CartItem {
     id?: string; // cart item id

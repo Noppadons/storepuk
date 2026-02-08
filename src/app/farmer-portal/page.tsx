@@ -75,9 +75,7 @@ export default function FarmerDashboard() {
                 <Link href="/farmer-portal/inventory/new" className="hidden md:flex btn btn-primary items-center gap-2">
                     <span>+</span> เพิ่มล็อตผักใหม่
                 </Link>
-                    <Link href="/farmer-portal/inventory/suggest" className="hidden md:flex btn items-center gap-2 ml-3 bg-yellow-100 text-yellow-800 px-3 py-2 rounded-lg">
-                        ✨ เสนอสินค้าใหม่
-                    </Link>
+                
             </div>
 
             {/* Stats Grid */}

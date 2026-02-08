@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Product, Category, PendingProduct } from '@/types';
+import { Product, Category } from '@/types';
 import { formatPrice } from '@/lib/utils';
 
 export default function AdminProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
-    const [pending, setPending] = useState<PendingProduct[]>([]);
+    
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,20 +99,7 @@ export default function AdminProductsPage() {
 
     useEffect(() => {
         fetchData();
-        fetchPending();
     }, [fetchData]);
-
-    const fetchPending = async () => {
-        try {
-            const res = await fetch('/api/pending-products');
-            if (res.ok) {
-                const data = await res.json();
-                setPending(data || []);
-            }
-        } catch (error) {
-            console.error('Failed to fetch pending:', error);
-        }
-    };
 
     const handleOpenModal = (product: Product | null = null) => {
         if (product) {
@@ -388,43 +375,7 @@ export default function AdminProductsPage() {
                 </div>
             )}
 
-            {/* Pending suggestions */}
-            {pending.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-lg text-slate-800">คำขอสินค้า (Pending Suggestions)</h3>
-                        <button onClick={fetchPending} className="text-sm text-slate-500">รีเฟรช</button>
-                    </div>
-                    <div className="space-y-3">
-                        {pending.map(item => (
-                            <div key={item.id} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg">
-                                <div>
-                                    <p className="font-medium">{item.nameTh} ({item.nameEn})</p>
-                                    <p className="text-xs text-slate-500">จากฟาร์ม: {item.farm?.name || item.farmId}</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button onClick={async () => {
-                                        if (!confirm('อนุมัติรายการนี้?')) return;
-                                        const res = await fetch('/api/pending-products/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id }) });
-                                        if (res.ok) {
-                                            alert('อนุมัติเรียบร้อยแล้ว');
-                                            fetchPending();
-                                            fetchData();
-                                        } else {
-                                            alert('อนุมัติไม่สำเร็จ');
-                                        }
-                                    }} className="px-3 py-1 rounded-lg bg-green-50 text-green-700">อนุมัติ</button>
-                                    <button onClick={async () => {
-                                        if (!confirm('ลบคำขอนี้?')) return;
-                                        const res = await fetch(`/api/pending-products?id=${item.id}`, { method: 'DELETE' });
-                                        if (res.ok) fetchPending();
-                                    }} className="px-3 py-1 rounded-lg bg-red-50 text-red-600">ลบ</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+            
         </div>
     );
 }

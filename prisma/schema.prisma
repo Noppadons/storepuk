@@ -17,75 +17,75 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   phone         String?   @unique
-  password      String?   // Added for credentials auth
+  password      String? // Added for credentials auth
   image         String?
   role          String    @default("customer") // customer, admin, farmer
   loyaltyPoints Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  farm          Farm?
-  orders        Order[]
-  addresses     Address[]
+  farm      Farm?
+  orders    Order[]
+  addresses Address[]
 }
 
 model Farm {
-  id             String   @id @default(cuid())
+  id             String  @id @default(cuid())
   name           String
   province       String
   description    String?
-  isVerified     Boolean  @default(false)
-  certifications String?  // Stored as JSON string
-  specialties    String?  // JSON string
+  isVerified     Boolean @default(false)
+  certifications String? // Stored as JSON string
+  specialties    String? // JSON string
   image          String?
   established    Int?
   area           String?
-  
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id])
-  
-  batches        HarvestBatch[]
-  products       Product[] @relation("FarmProducts") 
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  batches         HarvestBatch[]
+  products        Product[]        @relation("FarmProducts")
 }
 
 model Product {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   nameTh        String
   nameEn        String
-  slug          String   @unique
+  slug          String  @unique
   description   String?
-  unit          String   @default("kg")
-  basePrice     Float    @default(0)
+  unit          String  @default("kg")
+  basePrice     Float   @default(0)
   image         String?
-  storageTemp   String?   // Added for consistency with mock data
-  shelfLifeDays Int      @default(3)
-  
-  categoryId    String
-  category      Category @relation(fields: [categoryId], references: [id])
-  
-  batches       HarvestBatch[]
-  farms         Farm[] @relation("FarmProducts")
+  storageTemp   String? // Added for consistency with mock data
+  shelfLifeDays Int     @default(3)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  batches HarvestBatch[]
+  farms   Farm[]         @relation("FarmProducts")
 }
 
 model PendingProduct {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   nameTh        String
   nameEn        String
-  slug          String   @unique
+  slug          String  @unique
   description   String?
-  unit          String   @default("kg")
-  basePrice     Float    @default(0)
+  unit          String  @default("kg")
+  basePrice     Float   @default(0)
   image         String?
   storageTemp   String?
-  shelfLifeDays Int      @default(3)
+  shelfLifeDays Int     @default(3)
 
-  categoryId    String?
-  farmId        String
-  farm          Farm     @relation(fields: [farmId], references: [id])
+  categoryId String?
+  farmId     String
+  farm       Farm    @relation(fields: [farmId], references: [id])
 
-  isApproved    Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Category {
@@ -106,51 +106,51 @@ model HarvestBatch {
   pricePerKg   Float
   qualityGrade String   @default("A") // A, B, C
   status       String   @default("available") // available, low_stock, sold_out, expired
-  images       String?  // JSON string
-  
-  farmId       String
-  farm         Farm     @relation(fields: [farmId], references: [id])
-  
-  productId    String
-  product      Product  @relation(fields: [productId], references: [id])
-  
-  orderItems   OrderItem[]
+  images       String? // JSON string
+
+  farmId String
+  farm   Farm   @relation(fields: [farmId], references: [id])
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  orderItems OrderItem[]
 }
 
 model Order {
-  id           String      @id @default(cuid())
-  orderNumber  String      @unique
-  status       String      @default("pending") // pending, confirmed, shipping, delivered, cancelled
-  total        Float       @default(0)
-  subtotal     Float       @default(0)
-  deliveryFee  Float       @default(0)
-  discount     Float       @default(0)
+  id           String    @id @default(cuid())
+  orderNumber  String    @unique
+  status       String    @default("pending") // pending, confirmed, shipping, delivered, cancelled
+  total        Float     @default(0)
+  subtotal     Float     @default(0)
+  deliveryFee  Float     @default(0)
+  discount     Float     @default(0)
   deliveryDate DateTime?
   timeSlot     String?
-  
-  userId       String
-  user         User        @relation(fields: [userId], references: [id])
-  
-  addressId    String?
-  address      Address?    @relation(fields: [addressId], references: [id])
-  
-  items        OrderItem[]
-  
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  addressId String?
+  address   Address? @relation(fields: [addressId], references: [id])
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrderItem {
-  id         String       @id @default(cuid())
+  id         String @id @default(cuid())
   quantityKg Float
   unitPrice  Float
   totalPrice Float
-  
-  orderId    String
-  order      Order        @relation(fields: [orderId], references: [id])
-  
-  batchId    String
-  batch      HarvestBatch @relation(fields: [batchId], references: [id])
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id])
+
+  batchId String
+  batch   HarvestBatch @relation(fields: [batchId], references: [id])
 }
 
 model Address {
@@ -164,9 +164,9 @@ model Address {
   province    String
   postalCode  String
   isDefault   Boolean @default(false)
-  
-  userId      String
-  user        User    @relation(fields: [userId], references: [id])
-  
-  orders      Order[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  orders Order[]
 }

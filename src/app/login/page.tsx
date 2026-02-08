@@ -2,7 +2,7 @@
 
 import { Header, Footer } from '@/components';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
-    const { login } = useAuth();
+    const { login, user: authUser, loading: authLoading } = useAuth();
     const router = useRouter();
     const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('email');
     const [phone, setPhone] = useState('');
@@ -90,6 +90,13 @@ export default function LoginPage() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        // If auth context indicates a logged-in user, redirect away from login page
+        if (!authLoading && authUser) {
+            router.replace('/account');
+        }
+    }, [authLoading, authUser, router]);
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">

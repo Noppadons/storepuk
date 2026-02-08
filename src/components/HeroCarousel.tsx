@@ -167,9 +167,9 @@ export function HeroCarousel() {
                             transition={{ delay: 0.4, type: 'spring', damping: 15 }}
                             className="hidden md:flex justify-center flex-col items-center gap-4"
                         >
-                            <div className="text-[180px] filter drop-shadow-2xl select-none animate-float">
-                                {slides[currentSlide].icon}
-                            </div>
+                                <div className="text-[120px] md:text-[180px] filter drop-shadow-2xl select-none animate-float leading-none max-w-[220px] max-h-[220px] overflow-hidden">
+                                    {slides[currentSlide].icon}
+                                </div>
                             <div className="flex items-center gap-2 bg-white/40 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/40 shadow-sm">
                                 <ShieldCheck className="text-primary" />
                                 <span className="text-sm font-bold text-foreground/70">รับรองคุณภาพ GAP ทุกรายการ</span>

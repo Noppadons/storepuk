@@ -57,12 +57,12 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             whileHover={{ y: -8 }}
-            className="card-premium group cursor-pointer relative"
+            className="card-premium group cursor-pointer relative overflow-hidden"
         >
             <Link href={`/product/${product.slug}`} className="block">
                 {/* Product Image */}
-                <div className="product-image mb-4">
-                    <div className="absolute inset-0 flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-500">
+                <div className="product-image mb-4 relative aspect-square rounded-2xl overflow-hidden bg-surface">
+                    <div className="absolute inset-0 flex items-center justify-center text-6xl md:text-7xl lg:text-8xl transition-transform duration-500 select-none overflow-hidden">
                         {product.category.icon}
                     </div>
 

@@ -47,6 +47,55 @@ export default function AdminProductsPage() {
         }
     }, [formData.categoryId]);
 
+    // Search and selection state
+    const [query, setQuery] = useState('');
+    const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
+
+    const filteredProducts = products.filter(p => {
+        if (!query) return true;
+        const q = query.toLowerCase();
+        return (p.nameTh || '').toLowerCase().includes(q) || (p.nameEn || '').toLowerCase().includes(q) || (p.slug || '').toLowerCase().includes(q);
+    });
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    const bulkDelete = async () => {
+        const ids = Object.keys(selectedIds).filter(id => selectedIds[id]);
+        if (ids.length === 0) return alert('กรุณาเลือกสินค้าที่ต้องการลบ');
+        if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ ${ids.length} ชิ้น?`)) return;
+
+        try {
+            const res = await fetch('/api/products/bulk-delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids })
+            });
+
+            if (res.ok) {
+                setProducts(products.filter(p => !ids.includes(p.id)));
+                setSelectedIds({});
+            } else {
+                alert('ลบไม่สำเร็จ');
+            }
+        } catch (error) {
+            console.error('Bulk delete error:', error);
+        }
+    };
+
+    const exportCSV = () => {
+        const rows = filteredProducts.map(p => ({ id: p.id, nameTh: p.nameTh, nameEn: p.nameEn, price: p.basePrice, unit: p.unit }));
+        const csv = [Object.keys(rows[0] || {}).join(','), ...rows.map(r => Object.values(r).map(v => `"${String(v || '')}"`).join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `products-${Date.now()}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     useEffect(() => {
         fetchData();
     }, [fetchData]);
@@ -124,12 +173,22 @@ export default function AdminProductsPage() {
                     <h1 className="text-2xl font-bold text-slate-800">จัดการสินค้า (Products)</h1>
                     <p className="text-slate-500">เพิ่ม แก้ไข และจัดการรายการผักในระบบ</p>
                 </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
-                >
-                    <span>➕</span> เพิ่มสินค้าใหม่
-                </button>
+                <div className="flex items-center gap-3">
+                    <input
+                        placeholder="ค้นหาสินค้าโดยชื่อหรือ slug"
+                        className="p-3 rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary outline-none"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                    />
+                    <button onClick={exportCSV} className="px-4 py-3 bg-white border border-slate-200 rounded-xl hover:shadow">Export CSV</button>
+                    <button onClick={bulkDelete} className="px-4 py-3 bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100">Bulk Delete</button>
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                    >
+                        <span>➕</span> เพิ่มสินค้าใหม่
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -144,9 +203,11 @@ export default function AdminProductsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {products.map((product) => (
+                            {filteredProducts.map((product) => (
                                 <tr key={product.id} className="hover:bg-slate-50 transition-colors">
                                     <td className="p-4">
+                                        <input type="checkbox" checked={!!selectedIds[product.id]} onChange={() => toggleSelect(product.id)} className="mr-3" />
+                                        <div className="inline-flex align-middle">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-xl">
                                                 <span>🥒</span>
@@ -155,6 +216,7 @@ export default function AdminProductsPage() {
                                                 <p className="font-bold text-slate-800">{product.nameTh}</p>
                                                 <p className="text-xs text-slate-400">{product.nameEn}</p>
                                             </div>
+                                        </div>
                                         </div>
                                     </td>
                                     <td className="p-4">

@@ -60,8 +60,8 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
                 </div>
             </aside>
 
-            {/* Main Content */}
-            <div className="flex-1 md:ml-64 flex flex-col min-w-0">
+                {/* Main Content */}
+                <div className="flex-1 md:ml-64 flex flex-col min-w-0">
                 {/* Mobile Header */}
                 <header className="md:hidden bg-white border-b border-gray-200 px-4 h-16 flex items-center justify-between sticky top-0 z-20 shadow-sm">
                     <div className="flex items-center gap-3">
@@ -106,7 +106,34 @@ export default function AdminLayoutClient({ children }: { children: React.ReactN
                     </div>
                 )}
 
-                <main className="p-4 md:p-8 max-w-7xl mx-auto w-full">
+                <main className="p-4 md:p-6 max-w-7xl mx-auto w-full">
+                    {/* Topbar for search and quick actions */}
+                    <div className="hidden md:flex items-center justify-between gap-4 mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="text-2xl">🛡️</div>
+                            <div>
+                                <div className="text-sm text-slate-500">Admin Portal</div>
+                                <div className="font-bold text-lg text-slate-800">จัดการระบบ</div>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 flex items-center gap-4">
+                            <div className="flex-1 max-w-lg">
+                                <input
+                                    className="w-full p-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                                    placeholder="ค้นหาสินค้า, เกษตรกร, คำสั่งซื้อ..."
+                                    aria-label="Search admin"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Link href="/admin/products" className="px-4 py-2 bg-white border border-slate-200 rounded-lg hover:shadow">Products</Link>
+                                <Link href="/admin/users" className="px-4 py-2 bg-white border border-slate-200 rounded-lg hover:shadow">Users</Link>
+                                <Link href="/admin/farmers" className="px-4 py-2 bg-white border border-slate-200 rounded-lg hover:shadow">Farmers</Link>
+                                <Link href="/admin/orders" className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark">Quick Actions</Link>
+                            </div>
+                        </div>
+                    </div>
+
                     {children}
                 </main>
             </div>

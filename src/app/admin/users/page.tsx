@@ -7,6 +7,13 @@ export default function AdminUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+    const [query, setQuery] = useState('');
+
+    const filteredUsers = users.filter(u => {
+        if (!query) return true;
+        const q = query.toLowerCase();
+        return (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q) || (u.id || '').toLowerCase().includes(q);
+    });
 
     useEffect(() => {
         fetchUsers();
@@ -55,6 +62,26 @@ export default function AdminUsersPage() {
             <div>
                 <h1 className="text-2xl font-bold text-slate-800">จัดการผู้ใช้งาน (Users)</h1>
                 <p className="text-slate-500">ตรวจสอบและกำหนดสิทธิ์การเข้าใช้งานในระบบ</p>
+            </div>
+            <div className="flex items-center gap-3">
+                <input
+                    placeholder="ค้นหาผู้ใช้งาน by name / email / id"
+                    className="p-3 rounded-xl border border-slate-200 focus:ring-1 focus:ring-primary outline-none max-w-md"
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                />
+                <button onClick={() => {
+                    // export CSV
+                    const rows = filteredUsers.map(u => ({ id: u.id, name: u.name, email: u.email, role: u.role }));
+                    const csv = [Object.keys(rows[0] || {}).join(','), ...rows.map(r => Object.values(r).map(v => `"${String(v || '')}"`).join(','))].join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `users-${Date.now()}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }} className="px-4 py-2 bg-white border border-slate-200 rounded-xl">Export CSV</button>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

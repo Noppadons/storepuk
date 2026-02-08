@@ -403,6 +403,15 @@ export const users: User[] = [
                 isDefault: true
             }
         ]
+    },
+    {
+        id: 'u_admin',
+        email: 'admin@sodsai.com',
+        phone: '080-000-0000',
+        fullName: 'Admin System',
+        role: 'admin',
+        loyaltyPoints: 0,
+        password: 'password123'
     }
 ];
 

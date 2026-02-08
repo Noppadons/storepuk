@@ -101,7 +101,8 @@ async function main() {
                 name: user.fullName,
                 email: user.email,
                 phone: user.phone,
-                role: 'customer',
+                role: user.role || 'customer',
+                password: user.password || 'password123',
                 loyaltyPoints: user.loyaltyPoints
             }
         });

@@ -5,9 +5,10 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function calculateFreshness(harvestDate: Date) {
+export function calculateFreshness(harvestDate: Date | string) {
+    const date = new Date(harvestDate);
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - harvestDate.getTime());
+    const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays <= 1) {

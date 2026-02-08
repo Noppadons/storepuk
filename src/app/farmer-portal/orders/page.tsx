@@ -11,10 +11,10 @@ export default function OrderPage() {
 
     // Filter orders containing items for this farmer
     const myOrders = orders.filter(o =>
-        o.items.some(item => item.batch.farmer.id === currentFarmer.id)
+        o.items.some(item => item.batch.farmer?.id === currentFarmer.id)
     ).map(order => {
         // Calculate total for only this farmer's items in the order
-        const myItems = order.items.filter(item => item.batch.farmer.id === currentFarmer.id);
+        const myItems = order.items.filter(item => item.batch.farmer?.id === currentFarmer.id);
         const myTotal = myItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
         return {

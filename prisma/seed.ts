@@ -94,6 +94,12 @@ async function main() {
 
     // 4. Batches
     for (const batch of harvestBatches) {
+        const farmId = batch.farmer?.farm?.id || batch.farmer?.id || (batch as any).farmId;
+        if (!farmId) {
+            console.warn(`Skipping batch ${batch.id}: missing farm/farmer reference`);
+            continue;
+        }
+
         await prisma.harvestBatch.create({
             data: {
                 id: batch.id,
@@ -103,7 +109,7 @@ async function main() {
                 pricePerKg: batch.pricePerKg,
                 qualityGrade: batch.qualityGrade,
                 status: batch.status,
-                farmId: batch.farmer.farm.id,
+                farmId,
                 productId: batch.productId
             }
         });

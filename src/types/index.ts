@@ -5,7 +5,7 @@ export interface Category {
     nameEn: string;
     nameTh: string;
     slug: string;
-    icon: string;
+    icon?: string | null;
     sortOrder: number;
 }
 
@@ -15,13 +15,13 @@ export interface Farm {
     province: string;
     isVerified: boolean;
     certification?: string; // Deprecated, use certifications
-    certifications?: string[];
-    description?: string;
-    image?: string;
-    farmerName?: string;
-    established?: number;
-    area?: string;
-    specialties?: string[];
+    certifications?: string[] | string | null;
+    description?: string | null;
+    image?: string | null;
+    farmerName?: string | null;
+    established?: number | null;
+    area?: string | null;
+    specialties?: string[] | string | null;
 }
 
 export interface Farmer {
@@ -39,10 +39,10 @@ export interface HarvestBatch {
     quantityKg: number;
     remainingKg: number;
     pricePerKg: number;
-    qualityGrade: 'A' | 'B' | 'C';
-    photos: string[]; // JSON string in DB, but parsed
+    qualityGrade: string;
+    photos?: string[]; // JSON string in DB, but parsed
     expiresAt?: Date | string;
-    status: 'available' | 'low_stock' | 'sold_out' | 'expired';
+    status: string;
     farm?: Farm; // Added for relation
     farmId?: string;
     product?: Product;
@@ -58,7 +58,7 @@ export interface Product {
     description: string | null;
     unit: string;
     shelfLifeDays: number;
-    storageTemp: string;
+    storageTemp?: string | null;
     basePrice?: number; // Deprecated, kept for mock data compatibility
     activeBatches?: HarvestBatch[]; // Optional, populated via include
     batches?: HarvestBatch[]; // Prisma uses 'batches' relation name

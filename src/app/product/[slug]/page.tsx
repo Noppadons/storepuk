@@ -91,9 +91,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                         {freshness.labelTh}
                                     </div>
                                 )}
-                                {activeBatch?.farmer.farm.isVerified && (
+                                {activeBatch?.farmer?.farm?.isVerified && (
                                     <div className="absolute top-4 right-4 badge bg-white/90 text-foreground-muted">
-                                        ✓ {activeBatch.farmer.farm.certification || 'Verified'}
+                                        ✓ {activeBatch.farmer?.farm?.certification || 'Verified'}
                                     </div>
                                 )}
                             </div>
@@ -106,10 +106,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                             👨‍🌾
                                         </div>
                                         <div className="flex-1">
-                                            <h4 className="font-semibold">{activeBatch.farmer.farm.name}</h4>
-                                            <p className="text-sm text-foreground-muted">{activeBatch.farmer.farm.province}</p>
+                                            <h4 className="font-semibold">{activeBatch.farmer?.farm?.name}</h4>
+                                            <p className="text-sm text-foreground-muted">{activeBatch.farmer?.farm?.province}</p>
                                         </div>
-                                        <Link href={`/farm/${activeBatch.farmer.farm.id}`} className="btn btn-secondary text-sm py-2 px-4">
+                                        <Link href={`/farm/${activeBatch.farmer?.farm?.id}`} className="btn btn-secondary text-sm py-2 px-4">
                                             ดูฟาร์ม
                                         </Link>
                                     </div>

@@ -156,7 +156,12 @@ export default function FarmersPage() {
 
                                         {/* Specialties */}
                                         <div className="flex flex-wrap gap-2 mb-4">
-                                            {farm.specialties.map((specialty, idx) => (
+                                            {(Array.isArray(farm.specialties)
+                                                ? farm.specialties
+                                                : farm.specialties
+                                                    ? [farm.specialties]
+                                                    : []
+                                            ).map((specialty, idx) => (
                                                 <span key={idx} className="text-xs bg-surface-hover px-2 py-1 rounded-full">
                                                     {specialty}
                                                 </span>

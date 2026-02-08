@@ -69,7 +69,7 @@ export async function POST(request: Request) {
                 storageTemp: storageTemp || '2-8°C',
                 basePrice: basePrice || 0,
                 categoryId,
-                images: images ? JSON.stringify(images) : undefined
+                image: Array.isArray(images) && images.length ? images[0] : undefined
             }
         });
 
@@ -102,7 +102,7 @@ export async function PUT(request: Request) {
                 storageTemp,
                 basePrice,
                 categoryId,
-                images: images ? JSON.stringify(images) : undefined
+                image: Array.isArray(images) && images.length ? images[0] : undefined
             }
         });
 

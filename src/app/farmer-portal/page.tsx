@@ -59,8 +59,7 @@ export default function FarmerDashboard() {
     // The API /api/orders?farmerId=... returns the full order, but we should only count our items.
     const totalSales = orders.reduce((total, order) => {
         const myBatchIds = new Set(batches.map(b => b.id));
-        type OrderItemMinimal = { batchId: string; totalPrice?: number };
-        const myItems = (order.items as OrderItemMinimal[]).filter(item => myBatchIds.has(item.batchId));
+        const myItems = order.items.filter(item => myBatchIds.has(item.batch.id));
         return total + myItems.reduce((sum: number, item) => sum + (item.totalPrice || 0), 0);
     }, 0);
 
@@ -141,7 +140,7 @@ export default function FarmerDashboard() {
                                         </div>
                                         <div>
                                             <p className="font-medium text-sm">#{order.orderNumber}</p>
-                                            <p className="text-xs text-gray-500">{formatThaiDate(new Date(order.createdAt as string))}</p>
+                                            <p className="text-xs text-gray-500">{formatThaiDate(String(order.createdAt))}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">

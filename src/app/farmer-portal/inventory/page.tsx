@@ -109,9 +109,9 @@ export default function InventoryPage() {
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">
-                                            <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            <Link href={`/farmer-portal/inventory/${batch.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                                 แก้ไข
-                                            </button>
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))

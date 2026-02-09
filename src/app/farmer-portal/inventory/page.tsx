@@ -38,88 +38,135 @@ export default function InventoryPage() {
     }
 
     if (loading) {
-        return <div className="p-8 text-center text-gray-400">กำลังโหลดรายการสต็อก...</div>;
+        return <div className="flex items-center justify-center py-12"><div className="animate-spin text-2xl">⏳</div></div>;
     }
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'available': return { bg: 'bg-green-100', text: 'text-green-700', label: 'พร้อมขาย' };
+            case 'low_stock': return { bg: 'bg-amber-100', text: 'text-amber-700', label: 'ใกล้หมด' };
+            case 'sold_out': return { bg: 'bg-gray-100', text: 'text-gray-700', label: 'หมดแล้ว' };
+            case 'expired': return { bg: 'bg-red-100', text: 'text-red-700', label: 'หมดอายุ' };
+            default: return { bg: 'bg-gray-100', text: 'text-gray-700', label: status };
+        }
+    };
+
+    const totalRemaining = batches.reduce((sum, b) => sum + b.remainingKg, 0);
+    const lowStockCount = batches.filter(b => b.status === 'low_stock' || (b.remainingKg < 10 && b.remainingKg > 0)).length;
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">จัดการสต็อก (Inventory)</h1>
-                <Link href="/farmer-portal/inventory/new" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-                    + เพิ่มล็อตเก็บเกี่ยวใหม่
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800">จัดการสต็อก</h1>
+                    <p className="text-gray-500 mt-1">ล็อตผักของคุณทั้งหมด</p>
+                </div>
+                <Link href="/farmer-portal/inventory/new" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all">
+                    <span>➕</span> เพิ่มล็อตใหม่
                 </Link>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="p-4 font-semibold text-gray-600">สินค้า</th>
-                                <th className="p-4 font-semibold text-gray-600">ล็อต ID</th>
-                                <th className="p-4 font-semibold text-gray-600">วันที่เก็บเกี่ยว</th>
-                                <th className="p-4 font-semibold text-gray-600 text-right">ราคา/กก.</th>
-                                <th className="p-4 font-semibold text-gray-600 text-right">คงเหลือ / ทั้งหมด</th>
-                                <th className="p-4 font-semibold text-gray-600 text-center">สถานะ</th>
-                                <th className="p-4 font-semibold text-gray-600 text-right">การจัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {batches.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="p-8 text-center text-gray-400 italic">ยังไม่มีล็อตการผลิต กรุณาสร้างล็อตใหม่</td>
-                                </tr>
-                            ) : (
-                                batches.map((batch) => (
-                                    <tr key={batch.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded bg-green-50 flex items-center justify-center text-xl">
-                                                    🥬
-                                                </div>
-                                                <div className="font-medium text-gray-800">
-                                                    {batch.product?.nameTh || 'ไม่ระบุชื่อสินค้า'}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-xs font-mono text-gray-400 uppercase">
-                                            {batch.id.slice(-8)}
-                                        </td>
-                                        <td className="p-4 text-sm text-gray-600">
-                                            {formatThaiDate(new Date(batch.harvestDate))}
-                                        </td>
-                                        <td className="p-4 text-right font-medium text-gray-800">
-                                            {formatPrice(batch.pricePerKg)}
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <span className={`font-bold ${batch.remainingKg < 10 ? 'text-red-600' : 'text-gray-700'}`}>
-                                                {batch.remainingKg} กก.
-                                            </span>
-                                            <span className="text-gray-400 text-xs ml-1">/ {batch.quantityKg}</span>
-                                        </td>
-                                        <td className="p-4 text-center">
-                                            <span className={`badge text-xs px-2 py-1 rounded-full ${batch.status === 'available' ? 'bg-green-100 text-green-700' :
-                                                batch.status === 'low_stock' ? 'bg-amber-100 text-amber-700' :
-                                                    batch.status === 'sold_out' ? 'bg-gray-100 text-gray-500' :
-                                                        'bg-red-100 text-red-700'
-                                                }`}>
-                                                {batch.status === 'available' ? 'พร้อมขาย' :
-                                                    batch.status === 'low_stock' ? 'ใกล้หมด' :
-                                                        batch.status === 'sold_out' ? 'หมดแล้ว' : 'หมดอายุ'}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            <Link href={`/farmer-portal/inventory/${batch.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                                แก้ไข
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-xl">📦</div>
+                    <div>
+                        <p className="text-sm text-gray-500">ล็อตทั้งหมด</p>
+                        <p className="text-2xl font-bold text-gray-800">{batches.length}</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center text-xl">📊</div>
+                    <div>
+                        <p className="text-sm text-gray-500">ปริมาณคงเหลือ</p>
+                        <p className="text-2xl font-bold text-gray-800">{totalRemaining.toFixed(1)} กก.</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-amber-100 flex items-center justify-center text-xl">⚠️</div>
+                    <div>
+                        <p className="text-sm text-gray-500">ใกล้หมด</p>
+                        <p className="text-2xl font-bold text-amber-600">{lowStockCount}</p>
+                    </div>
                 </div>
             </div>
+
+            {/* Inventory Grid */}
+            {batches.length === 0 ? (
+                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300 py-16 text-center">
+                    <span className="text-6xl block mb-4">📭</span>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">ยังไม่มีล็อตการผลิต</h3>
+                    <p className="text-gray-500 mb-6">เริ่มต้นโดยเพิ่มล็อตผักเก็บเกี่ยวแรกของคุณ</p>
+                    <Link href="/farmer-portal/inventory/new" className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">
+                        <span>➕</span> สร้างล็อตแรก
+                    </Link>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {batches.map((batch) => {
+                        const statusInfo = getStatusColor(batch.status);
+                        const stockPercent = (batch.remainingKg / batch.quantityKg) * 100;
+                        const isLowStock = batch.remainingKg < 10 && batch.remainingKg > 0;
+
+                        return (
+                            <div key={batch.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all">
+                                {/* Product Header */}
+                                <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-3xl">🥬</span>
+                                        <div>
+                                            <h3 className="font-semibold text-gray-800">{batch.product?.nameTh || 'ไม่ระบุ'}</h3>
+                                            <p className="text-xs text-gray-500">{batch.id.slice(-8).toUpperCase()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-5 space-y-4">
+                                    {/* Date */}
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-500">เก็บเกี่ยว</span>
+                                        <span className="text-sm font-medium text-gray-700">{formatThaiDate(new Date(batch.harvestDate))}</span>
+                                    </div>
+
+                                    {/* Stock Bar */}
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-sm text-gray-600">สต็อก</span>
+                                            <span className={`text-sm font-bold ${isLowStock ? 'text-red-600' : 'text-green-600'}`}>
+                                                {batch.remainingKg}/{batch.quantityKg} กก.
+                                            </span>
+                                        </div>
+                                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full transition-all ${isLowStock ? 'bg-red-500' : 'bg-green-500'}`}
+                                                style={{ width: `${Math.min(100, stockPercent)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Price */}
+                                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                                        <span className="text-sm text-gray-500">ราคา</span>
+                                        <span className="text-lg font-bold text-primary">{formatPrice(batch.pricePerKg)}/กก.</span>
+                                    </div>
+
+                                    {/* Status */}
+                                    <div className={`${statusInfo.bg} ${statusInfo.text} rounded-lg px-3 py-2 text-center font-semibold text-sm`}>
+                                        {statusInfo.label}
+                                    </div>
+
+                                    {/* Action Button */}
+                                    <Link href={`/farmer-portal/inventory/${batch.id}`} className="w-full block py-2 px-4 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold rounded-lg text-center transition-colors">
+                                        แก้ไข
+                                    </Link>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }
